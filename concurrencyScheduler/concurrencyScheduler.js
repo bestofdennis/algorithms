@@ -1,20 +1,21 @@
 class Scheduler {
     constructor(maxExcutingNum = 1) {
         this.waitTasks = [];
-        this.excutingTasks = [];
+        this.excutingTasks = new Map();
         this.maxExcutingNum = maxExcutingNum;
     }
     add(promiseMaker) {
-        if (this.excutingTasks.length >= this.maxExcutingNum) {
+        if (this.excutingTasks.size >= this.maxExcutingNum) {
             this.waitTasks.push(promiseMaker);
         } else {
             this.run(promiseMaker);
         }
     }
     run(promiseMaker) {
-        const index = this.excutingTasks.push(promiseMaker) - 1;
+        const s = Symbol();
+        this.excutingTasks.set(s, promiseMaker);
         promiseMaker().finally(res => {
-            this.excutingTasks.splice(index, 1);
+            this.excutingTasks.delete(s);
             if (this.waitTasks.length) {
                 this.run(this.waitTasks.shift())
             }
